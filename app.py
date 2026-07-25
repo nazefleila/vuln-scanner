@@ -29,8 +29,8 @@ NVD_API_KEY = os.getenv("NVD_API_KEY")
 st.set_page_config(page_title="Vuln Scanner", page_icon="🔍", layout="wide")
 demo_mode = st.toggle(
     "🎭 Mode démo (sans Nmap, utilise des résultats pré-calculés)",
-    value=False,
-    help="Active ce mode si Nmap n'est pas installé sur ce serveur (ex: version hébergée en ligne)."
+    value=True,
+    help="Désactive ce mode si tu utilises l'app en local avec Nmap installé, pour lancer un vrai scan."
 )
 st.title("🔍 Vuln-Scanner Dashboard")
 st.caption("Scanner de vulnérabilités automatisé avec scoring de risque CVSS")
