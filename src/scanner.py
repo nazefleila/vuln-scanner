@@ -13,8 +13,11 @@ Exemple :
   python src\\scanner.py --target scanme.nmap.org --fast
 """
 
+
+
 import argparse
 import os
+import re
 from dotenv import load_dotenv
 
 # Import des 4 modules qu'on a écrits précédemment.
@@ -23,6 +26,18 @@ from nmap_scanner import scan as nmap_scan
 from cve_lookup import search_cve
 from risk_scorer import compute_risk_score, severity_label
 from report_generator import generate_markdown, save_report
+
+
+def simplify_version(version: str) -> str:
+    """
+    Extrait juste les 2 premiers chiffres de version (ex: '6.6.1p1 Ubuntu 2ubuntu2.13' -> '6.6').
+    Une recherche trop précise (avec le patch de distribution Linux) ne matche
+    presque jamais le texte des CVE dans le NVD.
+    """
+    match = re.match(r"(\d+)\.(\d+)", version)
+    if match:
+        return f"{match.group(1)}.{match.group(2)}"
+    return version
 
 load_dotenv()
 NVD_API_KEY = os.getenv("NVD_API_KEY")
@@ -54,7 +69,8 @@ def run_pipeline(target: str, fast: bool, max_cve: int) -> list[dict]:
         # Construit une requête du type "OpenSSH 6.6.1p1" pour l'API NVD.
         # Si le produit n'a pas été détecté par Nmap (chaîne vide),
         # on retombe sur le simple nom du service (ex: "ssh").
-        query = f"{svc['product']} {svc['version']}".strip() or svc["service"]
+        simplified_version = simplify_version(svc["version"])
+        query = f"{svc['product']} {simplified_version}".strip() or svc["service"]
         if not query:
             continue
 
